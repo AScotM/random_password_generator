@@ -19,6 +19,11 @@ generate_password() {
 
     # Generate password using /dev/urandom and tr
     PASSWORD=$(tr -dc "$charset" < /dev/urandom | head -c "$length")
+    if [[ ${#PASSWORD} -ne $length ]]; then
+        echo "Error: Failed to generate a password of the requested length!"
+        return 1
+    fi
+
     echo -e "\nGenerated Password: $PASSWORD"
 }
 
@@ -36,10 +41,32 @@ while true; do
 done
 
 # Ask for character set inclusion
-read -rp "Include letters? (y/n): " use_letters
-read -rp "Include digits? (y/n): " use_digits
-read -rp "Include special characters? (y/n): " use_special
+while true; do
+    read -rp "Include letters? (y/n): " use_letters
+    if [[ $use_letters =~ ^[yYnN]$ ]]; then
+        break
+    else
+        echo "Invalid input! Please enter 'y' or 'n'."
+    fi
+done
+
+while true; do
+    read -rp "Include digits? (y/n): " use_digits
+    if [[ $use_digits =~ ^[yYnN]$ ]]; then
+        break
+    else
+        echo "Invalid input! Please enter 'y' or 'n'."
+    fi
+done
+
+while true; do
+    read -rp "Include special characters? (y/n): " use_special
+    if [[ $use_special =~ ^[yYnN]$ ]]; then
+        break
+    else
+        echo "Invalid input! Please enter 'y' or 'n'."
+    fi
+done
 
 # Generate password based on user choices
 generate_password "$length" "$use_letters" "$use_digits" "$use_special"
-
