@@ -4,6 +4,7 @@ use warnings;
 use Term::ReadLine;
 use List::Util 'shuffle';
 
+# Function to generate a random password
 sub generate_password {
     my ($length, $use_letters, $use_digits, $use_special) = @_;
     
@@ -20,6 +21,7 @@ sub generate_password {
     return $password;
 }
 
+# Function to check the strength of the generated password
 sub is_password_strong {
     my ($password, $use_letters, $use_digits, $use_special) = @_;
     my $has_letters = $use_letters ? ($password =~ /[a-zA-Z]/) : 1;
@@ -28,7 +30,8 @@ sub is_password_strong {
     return $has_letters && $has_digits && $has_special;
 }
 
-sub tree_menu {
+# Function to handle the main menu
+sub main_menu {
     print "\n--- Random Password Generator ---\n";
     my $term = Term::ReadLine->new('Password Generator');
 
@@ -42,18 +45,14 @@ sub tree_menu {
         if ($choice eq "1") {
             password_config();
         } elsif ($choice eq "2") {
-            print "Are you sure you want to exit? (y/n): ";
-            my $confirm_exit = lc($term->readline());
-            if ($confirm_exit eq 'y') {
-                print "Exiting. Goodbye!\n";
-                last;
-            }
+            exit_program($term);
         } else {
             print "Invalid choice. Please try again.\n";
         }
     }
 }
 
+# Function to handle password configuration
 sub password_config {
     my $term = Term::ReadLine->new('Password Config');
 
@@ -61,20 +60,14 @@ sub password_config {
     my $length = $term->readline();
     chomp $length;
 
-    if ($length !~ /^\d+$/ || $length <= 0) {
+    unless (is_positive_integer($length)) {
         print "Password length must be a positive integer.\n";
         return;
     }
 
-    print "\nInclude the following in your password:\n";
-    print "Letters (y/n): ";
-    my $use_letters = lc($term->readline()) eq 'y';
-
-    print "Digits (y/n): ";
-    my $use_digits = lc($term->readline()) eq 'y';
-
-    print "Special characters (y/n): ";
-    my $use_special = lc($term->readline()) eq 'y';
+    my $use_letters = prompt_for_inclusion($term, "Letters");
+    my $use_digits = prompt_for_inclusion($term, "Digits");
+    my $use_special = prompt_for_inclusion($term, "Special characters");
 
     unless ($use_letters || $use_digits || $use_special) {
         print "You must include at least one character type!\n";
@@ -89,5 +82,29 @@ sub password_config {
     print "\nGenerated Password: $password\n";
 }
 
+# Function to check if a given input is a positive integer
+sub is_positive_integer {
+    my ($input) = @_;
+    return $input =~ /^\d+$/ && $input > 0;
+}
+
+# Function to prompt for inclusion of a character set
+sub prompt_for_inclusion {
+    my ($term, $set_name) = @_;
+    print "$set_name (y/n): ";
+    return lc($term->readline()) eq 'y';
+}
+
+# Function to handle exit confirmation
+sub exit_program {
+    my ($term) = @_;
+    print "Are you sure you want to exit? (y/n): ";
+    my $confirm_exit = lc($term->readline());
+    if ($confirm_exit eq 'y') {
+        print "Exiting. Goodbye!\n";
+        exit 0;
+    }
+}
+
 # Run the program
-tree_menu();
+main_menu();
